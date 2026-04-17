@@ -11,13 +11,10 @@ export class KleeatAmbulanceWlList {
   @Prop() apiBase: string;
   @Prop() ambulanceId: string;
   @State() errorMessage: string;
-  waitingPatients: any[];
 
-  async componentWillLoad() {
-    this.waitingPatients = await this.getWaitingPatientsAsync();
-  }
+  waitingPatients: WaitingListEntry[];
 
-  private async getWaitingPatientsAsync() {
+  private async getWaitingPatientsAsync(): Promise<WaitingListEntry[]> {
     // be prepared for connectivitiy issues
     try {
       const configuration = new Configuration({
@@ -37,23 +34,26 @@ export class KleeatAmbulanceWlList {
     return [];
   }
 
+  async componentWillLoad() {
+    this.waitingPatients = await this.getWaitingPatientsAsync();
+  }
+
   render() {
     return (
       <Host>
-        {this.errorMessage ? (
-          <div class="error">{this.errorMessage}</div>
-        ) : (
+        {this.errorMessage
+          ? <div class="error">{this.errorMessage}</div>
+          :
           <md-list>
-            {this.waitingPatients.map((patient, index) => (
-              // TODO: Fix ID
-              <md-list-item onClick={() => this.entryClicked.emit(patient.id)} key={patient.id}>
+            {this.waitingPatients.map(patient =>
+              <md-list-item onClick={ () => this.entryClicked.emit(patient.id)} >
                 <div slot="headline">{patient.name}</div>
                 <div slot="supporting-text">{'Predpokladaný vstup: ' + patient.estimatedStart?.toLocaleString()}</div>
                 <md-icon slot="start">person</md-icon>
               </md-list-item>
-            ))}
+            )}
           </md-list>
-        )}
+        }
         <md-filled-icon-button class="add-button"
           onclick={() => this.entryClicked.emit("@new")}>
           <md-icon>add</md-icon>
